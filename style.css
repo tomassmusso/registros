@@ -18,7 +18,15 @@ body {
     color: var(--text-main); 
 }
 
-.container { max-width: 1000px; margin: auto; padding: 15px; }
+.container { 
+    max-width: 100%; /* Evita desbordes horizontales */
+    margin: auto; 
+    padding: 10px; /* Menos padding lateral para ganar espacio en el centro */
+    box-sizing: border-box; 
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra todo el contenido hijo */
+}
 
 .titulo { text-align: center; margin: 10px 0; font-weight: 800; }
 
@@ -37,15 +45,21 @@ body {
 }
 
 /* GRÁFICOS */
+#balanceTotal {
+    width: 100%;
+    max-width: 400px;
+    margin: 20px auto !important;
+    box-sizing: border-box;
+}
+
 .grafico-container {
-    background: var(--card); 
-    border-radius: 20px; 
-    padding: 20px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-    margin-bottom: 25px; 
-    height: 350px;
-    border: 1px solid var(--border);
-    box-sizing: border-box; /* Para que el padding no sume ancho extra */
+    width: 100% !important;
+    max-width: 400px; /* Tamaño ideal para que no se vea gigante */
+    margin: 0 auto 20px auto;
+    background: var(--card);
+    border-radius: 20px;
+    padding: 15px;
+    box-sizing: border-box;
 }
 
 canvas {
@@ -55,21 +69,21 @@ canvas {
 
 /* TABLAS */
 .tablas-container {
+    width: 100%;
     display: flex;
-    flex-direction: row; 
-    gap: 15px;
-    margin-bottom: 30px;
-    align-items: flex-start;
+    flex-direction: column; /* Apiladas en móvil */
+    align-items: center; 
+    gap: 20px;
 }
 
 .tabla-wrapper {
-    flex: 1; 
-    min-width: 280px;
+    width: 100%;
+    max-width: 100%; /* Asegura que no sea más ancha que la pantalla */
     background: var(--card);
-    border-radius: 18px;
+    border-radius: 15px;
     padding: 15px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-    border: 1px solid var(--border);
+    box-sizing: border-box;
+    overflow-x: auto; /* Si la tabla es muy ancha, permite scroll interno en vez de romper la app */
 }
 
 .tabla-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }

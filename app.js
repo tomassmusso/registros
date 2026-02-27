@@ -458,7 +458,7 @@ function dibujarGraficoBarras(agrupado) {
                     grid: { display: false },
                     ticks: {
                         color: '#ffffff',
-                        font: { size: 9 },
+                        font: { size: 10 },
                         // Formato moneda en el eje lateral (sin decimales para que no ocupe tanto espacio)
                         callback: function(value) {
                             return value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
