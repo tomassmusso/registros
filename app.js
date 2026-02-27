@@ -119,14 +119,19 @@ function inicializarUI() {
         };
     }
 
-    const montoInput = document.getElementById("monto");
+const montoInput = document.getElementById("monto");
 if (montoInput) {
-    montoInput.type = "text"; // Cambiamos a text para permitir el signo $
+    montoInput.type = "text"; // Para que acepte el formato $ 0.000,00
+    montoInput.setAttribute("inputmode", "decimal"); // Fuerza el teclado numérico con coma/punto
+    
     montoInput.addEventListener("input", (e) => {
         let val = e.target.value.replace(/[^\d]/g, "");
         if (val) {
             let n = parseFloat(val) / 100;
-            e.target.value = n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+            e.target.value = n.toLocaleString('es-AR', { 
+                style: 'currency', 
+                currency: 'ARS' 
+            });
         }
     });
 }
@@ -363,7 +368,12 @@ function formatearParaInput(valor) {
 
 // Convierte "$ 1.234,56" de nuevo a un número puro (1234.56)
 function limpiarMonto(valor) {
-    return parseFloat(valor.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
+    if (!valor) return 0;
+    // Quita el $, los puntos de miles y cambia la coma decimal por un punto
+    const limpio = valor.replace(/\$/g, "")
+                        .replace(/\./g, "")
+                        .replace(",", ".");
+    return parseFloat(limpio) || 0;
 }
 
 function dibujarGraficoTorta(data) {
