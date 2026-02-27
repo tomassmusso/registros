@@ -119,6 +119,18 @@ function inicializarUI() {
         };
     }
 
+    const montoInput = document.getElementById("monto");
+if (montoInput) {
+    montoInput.type = "text"; // Cambiamos a text para permitir el signo $
+    montoInput.addEventListener("input", (e) => {
+        let val = e.target.value.replace(/[^\d]/g, "");
+        if (val) {
+            let n = parseFloat(val) / 100;
+            e.target.value = n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+        }
+    });
+}
+
     // 5. Botones de Expandir Tablas
     document.querySelectorAll(".btnExpand").forEach(btn => {
         btn.onclick = () => {
@@ -232,8 +244,10 @@ function abrirModalExpandido(titulo, data) {
             <td style="font-size:0.85em; color:var(--text-muted)">${r.detalle || "-"}</td>
             <td style="font-weight:bold">${montoAr}</td>
             <td>
-                <button onclick="editar(${r.id})" style="background:none; border:none; cursor:pointer;">✏️</button>
-                <button onclick="borrar(${r.id})" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                <div class="acciones">
+                    <button class="btn-edit" onclick="editar(${r.id})">✏️</button>
+                    <button class="btn-delete" onclick="borrar(${r.id})">🗑️</button>
+                </div>
             </td>
         </tr>`;
     });
@@ -247,13 +261,18 @@ document.getElementById("cerrarModalTabla").onclick = () => document.getElementB
 // Formulario Guardar
 document.getElementById("registroForm").onsubmit = (e) => {
     e.preventDefault();
+    
+    // Usamos la función limpiarMonto para obtener el número real
+    const montoLimpio = limpiarMonto(document.getElementById("monto").value);
+
     const data = {
         fecha: document.getElementById("fecha").value,
         tipo: document.getElementById("tipoSelect").value,
         categoria: document.getElementById("categoriaSelect").value,
-        monto: parseFloat(document.getElementById("monto").value),
+        monto: montoLimpio, // Guardamos el número limpio
         detalle: document.getElementById("detalle").value
     };
+    
     const tx = db.transaction("registro", "readwrite");
     if (editandoId) data.id = editandoId;
     tx.objectStore("registro").put(data);
@@ -275,11 +294,16 @@ window.borrar = (id) => {
 window.editar = (id) => {
     const r = registrosGlobales.find(x => x.id === id);
     editandoId = id;
+
+    // Cambiamos el título del modal a "Editar Registro"
+    const titulo = document.getElementById("modalTitulo");
+    if (titulo) titulo.textContent = "Editar Registro";
+
     document.getElementById("fecha").value = r.fecha;
     document.getElementById("tipoSelect").value = r.tipo;
     document.getElementById("tipoSelect").dispatchEvent(new Event("change"));
     document.getElementById("categoriaSelect").value = r.categoria;
-    document.getElementById("monto").value = r.monto;
+    document.getElementById("monto").value = r.monto.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
     document.getElementById("detalle").value = r.detalle;
     document.getElementById("modalTabla").style.display = "none";
     document.getElementById("modalRegistro").style.display = "flex";
@@ -329,6 +353,19 @@ document.getElementById("btnSumarCat").onclick = () => {
     };
 };
 
+// Convierte un número o string a formato $ 1.234,56
+function formatearParaInput(valor) {
+    if (!valor) return "";
+    let n = parseFloat(valor.toString().replace(/[^\d]/g, "")) / 100;
+    if (isNaN(n)) return "";
+    return n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+}
+
+// Convierte "$ 1.234,56" de nuevo a un número puro (1234.56)
+function limpiarMonto(valor) {
+    return parseFloat(valor.replace(/[^\d,]/g, "").replace(",", ".")) || 0;
+}
+
 function dibujarGraficoTorta(data) {
     const ctx = document.getElementById("graficoTorta").getContext("2d");
     if (window.miChartTorta) window.miChartTorta.destroy();
@@ -344,9 +381,18 @@ function dibujarGraficoTorta(data) {
         },
         options: { 
             maintainAspectRatio: false,
-            cutout: '75%', // Lo hace más fino/moderno
+            cutout: '75%',
             plugins: { 
-                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let value = context.parsed || 0;
+                            // Formato moneda para el tooltip
+                            return ` ${context.label}: ${value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}`;
+                        }
+                    }
+                }
             }
         }
     });
@@ -366,29 +412,41 @@ function dibujarGraficoBarras(agrupado) {
             datasets: [{
                 label: 'Gastos por Categoría',
                 data: valores,
-                backgroundColor: '#ef4444', // Usando el rojo de tu paleta
+                backgroundColor: '#ef4444',
                 borderRadius: 5
             }]
         },
         options: { 
             maintainAspectRatio: false,
             plugins: { 
-                legend: { display: false } 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let value = context.raw || 0;
+                            return ` Monto: ${value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' })}`;
+                        }
+                    }
+                }
             },
             scales: {
                 y: { 
                     beginAtZero: true, 
                     grid: { display: false },
                     ticks: {
-                        color: '#ffffff', // <--- Montos en blanco (Eje Y)
-                        font: { size: 12 }
+                        color: '#ffffff',
+                        font: { size: 10 },
+                        // Formato moneda en el eje lateral (sin decimales para que no ocupe tanto espacio)
+                        callback: function(value) {
+                            return value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
+                        }
                     }
                 },
                 x: { 
                     grid: { display: false },
                     ticks: {
-                        color: '#ffffff', // <--- Categorías en blanco (Eje X)
-                        font: { size: 12 }
+                        color: '#ffffff',
+                        font: { size: 11 }
                     }
                 }
             }
