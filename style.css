@@ -45,6 +45,12 @@ body {
     margin-bottom: 25px; 
     height: 350px;
     border: 1px solid var(--border);
+    box-sizing: border-box; /* Para que el padding no sume ancho extra */
+}
+
+canvas {
+    width: 100% !important; /* Obliga al gráfico a adaptarse al contenedor */
+    height: auto !important;
 }
 
 /* TABLAS */

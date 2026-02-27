@@ -432,6 +432,15 @@ function dibujarGraficoBarras(agrupado) {
         },
         options: { 
             maintainAspectRatio: false,
+            responsive: true, // Asegura que responda al cambio de tamaño
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 25, // Damos espacio a la derecha para que no se corte la última barra
+                    top: 10,
+                    bottom: 10
+                }
+            },
             plugins: { 
                 legend: { display: false },
                 tooltip: {
@@ -449,7 +458,7 @@ function dibujarGraficoBarras(agrupado) {
                     grid: { display: false },
                     ticks: {
                         color: '#ffffff',
-                        font: { size: 10 },
+                        font: { size: 9 },
                         // Formato moneda en el eje lateral (sin decimales para que no ocupe tanto espacio)
                         callback: function(value) {
                             return value.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 });
