@@ -147,16 +147,20 @@ if (montoInput) {
         };
     });
 
-    // 6. Backup y Datos
-    const btnExportar = document.getElementById("btnExportar");
-    if (btnExportar) btnExportar.onclick = exportarJSON;
+    // 6. Backup y Datos (Dentro de inicializarUI)
+const btnExportar = document.getElementById("btnExportar");
+if (btnExportar) btnExportar.onclick = exportarJSON;
 
-    const btnImportar = document.getElementById("btnImportar");
-    const importFile = document.getElementById("importFile");
-    if (btnImportar && importFile) {
-        btnImportar.onclick = () => importFile.click();
-        importFile.onchange = importarJSON;
-    }
+const btnImportar = document.getElementById("btnImportar");
+const importFile = document.getElementById("importFile");
+
+if (btnImportar && importFile) {
+    btnImportar.onclick = () => {
+        importFile.value = ""; // Limpiamos el valor para que deje re-subir el mismo archivo
+        importFile.click();
+    };
+    importFile.onchange = (e) => importarJSON(e);
+}
 
     // 7. Sidebar (Menu Lateral) - Configuración Final
     const menuBtn = document.getElementById("menuBtn");
@@ -491,13 +495,28 @@ function exportarJSON() {
 }
 
 function importarJSON(e) {
+    if (!e.target.files.length) return;
+    
     const reader = new FileReader();
     reader.onload = (ev) => {
-        const datos = JSON.parse(ev.target.result);
-        const tx = db.transaction("registro", "readwrite");
-        const store = tx.objectStore("registro");
-        datos.forEach(d => { delete d.id; store.add(d); });
-        tx.oncomplete = () => actualizarVista();
+        try {
+            const datos = JSON.parse(ev.target.result);
+            const tx = db.transaction("registro", "readwrite");
+            const store = tx.objectStore("registro");
+            
+            datos.forEach(d => { 
+                delete d.id; // Evitamos conflictos de IDs duplicados
+                store.add(d); 
+            });
+            
+            tx.oncomplete = () => {
+                alert("¡Datos importados con éxito!");
+                actualizarVista();
+            };
+        } catch (err) {
+            alert("Error: El archivo no es válido.");
+            console.error(err);
+        }
     };
     reader.readAsText(e.target.files[0]);
 }
